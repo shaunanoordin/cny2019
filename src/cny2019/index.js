@@ -127,12 +127,14 @@ export class CNY2019 extends Story {
   postPaint() {
     const avo = this.avo;
     
-    if (avo.state === AVO.STATE_START) {
-      this.paintStartInstructions();
-    } else if (avo.state === AVO.STATE_ACTION) {
+    if (avo.state === AVO.STATE_ACTION) {
       this.paintRacingScore();
-    } else if (avo.state === AVO.STATE_END) {
-      this.paintEndScore();
+    } else if (avo.state === AVO.STATE_COMIC) {
+      if (avo.comicStrip && avo.comicStrip.name === "introComic") {
+        this.paintWinScore();
+      } else if (avo.comicStrip && avo.comicStrip.name === "winComic") {
+        this.paintWinScore();
+      }
     }
   }
   
@@ -182,8 +184,29 @@ export class CNY2019 extends Story {
     //--------------------------------
   }
   
-  paintEndScore() {
+  paintWinScore() {
     const avo = this.avo;
+    
+    console.log('avo Score:', avo.store.score);
+    
+    avo.context2d.font = AVO.DEFAULT_FONT;
+    let x = 0, y = 0;
+    const SHADOW_COLOUR = "#c44";
+    const TEXT_COLOUR = "#eee";
+    const SHADOW_DIST = 2;
+    
+    //Paint the score
+    //--------------------------------
+    avo.context2d.textBaseline = "top";
+    avo.context2d.textAlign = "left";
+    x = 64;
+    y = 64;
+    
+    avo.context2d.fillStyle = SHADOW_COLOUR;
+    avo.context2d.fillText(avo.store.score, x + SHADOW_DIST, y + SHADOW_DIST);
+    avo.context2d.fillStyle = TEXT_COLOUR;
+    avo.context2d.fillText(avo.store.score, x, y);
+    //--------------------------------
   }
   
   playIntroComic() {
