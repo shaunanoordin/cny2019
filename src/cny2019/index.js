@@ -18,8 +18,6 @@ import { Physics } from "../avo/physics.js";
 export class CNY2019 extends Story {
   constructor() {
     super();
-    this.init = this.init.bind(this);
-
   }
   
   init() {
@@ -49,7 +47,7 @@ export class CNY2019 extends Story {
     //Animations
     //--------------------------------
     const STEPS_PER_SECOND = AVO.FRAMES_PER_SECOND / 10;
-    this.animationSets = {
+    avo.animationSets = {
       rooster: {
         rule: AVO.ANIMATION_RULE_BASIC,
         tileWidth: 128,
@@ -98,8 +96,8 @@ export class CNY2019 extends Story {
     };
 
     //Process Animations; expand steps to many frames per steps.
-    for (let animationTitle in this.animationSets) {
-      let animationSet = this.animationSets[animationTitle];
+    for (let animationTitle in avo.animationSets) {
+      let animationSet = avo.animationSets[animationTitle];
       for (let animationName in animationSet.actions) {
         let animationAction = animationSet.actions[animationName];
         let newSteps = [];
@@ -128,10 +126,24 @@ export class CNY2019 extends Story {
   run_action() {
     const avo = this.avo;
     
-    console.log('action');
-    
     if (avo.state === AVO.STATE_ACTION) {
-      
+      if (avo.playerActor.x < 0) avo.playerActor.x = 0;
+      if (avo.playerActor.y < 0) avo.playerActor.y = 0;
+      if (avo.playerActor.x > avo.canvasWidth) avo.playerActor.x = avo.canvasWidth;
+      if (avo.playerActor.y > avo.canvasHeight) avo.playerActor.y = avo.canvasHeight;
+
+      avo.store.flyingSpeed = Math.floor(
+        (avo.playerActor.x / avo.canvasWidth) * 
+        (avo.store.FLYING_SPEED_MAX - avo.store.FLYING_SPEED_MIN) +
+        avo.store.FLYING_SPEED_MIN
+      );
+      avo.store.time++;
+      avo.store.distance += avo.store.flyingSpeed;
+
+      //Win condition?
+      if (avo.store.distance >= avo.store.TARGET_DISTANCE) {
+        avo.changeState(AVO.STATE_COMIC, playWinComic);
+      }
     }
   }
   
@@ -153,15 +165,18 @@ export class CNY2019 extends Story {
   playRacingGame() {
     const avo = this.avo;
     
-    console.log('x')
-    
     //Data
     //--------------------------------
     avo.actors = [];
     avo.store = {
       distance: 0,
+      flyingSpeed: 0,
+      FLYING_SPEED_MIN: 2,
+      FLYING_SPEED_MAX: 16,
       tick: 0,
       TICK_MAX: AVO.FRAMES_PER_SECOND * 2,
+      time: 0,
+      TIME_MAX: AVO.FRAMES_PER_SECOND * 60,
     };
     //--------------------------------
 
