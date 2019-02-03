@@ -146,15 +146,18 @@ export class CNY2019 extends Story {
     //--------------------------------
     avo.actors = [];
     avo.store = {
+      score: 0,
       distance: 0,
       TARGET_DISTANCE: 1000,
       runningSpeed: 0,
       RUNNING_SPEED_MIN: 2,
       RUNNING_SPEED_MAX: 16,
+      MIN_Y: 128,  //Portion of the screen that the player cannot go above
+      MAX_Y: avo.canvasHeight - 128,  //Portion of the screen that the player cannot go above
       tick: 0,
       TICK_MAX: AVO.FRAMES_PER_SECOND * 2,
       time: 0,
-      TIME_MAX: AVO.FRAMES_PER_SECOND * 60,
+      TIME_MAX: AVO.FRAMES_PER_SECOND * 10,
     };
     //--------------------------------
 
@@ -178,9 +181,9 @@ export class CNY2019 extends Story {
     //Player: keep in bounds of screen
     //--------------------------------
     if (avo.playerActor.x < 0) avo.playerActor.x = 0;
-    if (avo.playerActor.y < 0) avo.playerActor.y = 0;
+    if (avo.playerActor.y < avo.store.MIN_Y) avo.playerActor.y = avo.store.MIN_Y;
     if (avo.playerActor.x > avo.canvasWidth) avo.playerActor.x = avo.canvasWidth;
-    if (avo.playerActor.y > avo.canvasHeight) avo.playerActor.y = avo.canvasHeight;
+    if (avo.playerActor.y > avo.store.MAX_Y) avo.playerActor.y = avo.store.MAX_Y;
     //--------------------------------
 
     //Time and Space
@@ -196,9 +199,9 @@ export class CNY2019 extends Story {
 
     //Win condition?
     //--------------------------------
-    //if (avo.store.distance >= avo.store.TARGET_DISTANCE) {
-    //  avo.changeState(AVO.STATE_COMIC, this.playWinComic);
-    //}
+    if (avo.store.time >= avo.store.TIME_MAX) {
+      avo.changeState(AVO.STATE_COMIC, this.playWinComic.bind(this));
+    }
     //--------------------------------
     
     //Run physics for non-player Actors.
@@ -211,7 +214,11 @@ export class CNY2019 extends Story {
 
       //Check if something is colliding with the player.
       if (Physics.checkCollision(actor, avo.playerActor)) {
-        
+        if (!actor.attributes.hasBeenTouched) {
+          actor.attributes.hasBeenTouched = true;
+          actor.rotation = AVO.ROTATION_EAST;  //TMP
+          avo.store.score++;
+        }
       }
     });
 
@@ -228,18 +235,28 @@ export class CNY2019 extends Story {
     const avo = this.avo;    
     if (Math.random() > 0.05) return;
     
-    console.log('+++', avo.actors.length);
-
     const x = avo.canvasWidth * 1.1;
-    const y = 50;
+    const y = avo.store.MIN_Y + Math.floor(Math.random() * (avo.store.MAX_Y - avo.store.MIN_Y));
+    
+    console.log(y);
     const actor = new Actor("coin", x, y, 32, AVO.SHAPE_CIRCLE);
     actor.solid = false;
     actor.spritesheet = avo.assets.images.fireworks;
     actor.animationSet = avo.animationSets.fireworks;
     actor.playAnimation("idle");
     actor.rotation = AVO.ROTATION_NORTH;
-    //actor.attributes[AVO.ATTR.SPEED] = Math.floor(Math.random() * 8 + 4);
+    //actor.attributes.value = 1;
+    actor.attributes.hasBeenTouched = false;
     avo.actors.push(actor);
-    console.log('+++', avo.actors.length);
+  }
+  
+  playWinComic() {
+    const avo = this.avo;
+    
+    avo.comicStrip = new ComicStrip(
+      "wincomic",
+      [ avo.assets.images.comicWin1 ],
+      this.playIntroComic.bind(this)
+    );
   }
 }
