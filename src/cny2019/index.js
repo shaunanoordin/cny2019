@@ -124,11 +124,73 @@ export class CNY2019 extends Story {
     }
   }
   
+  postPaint() {
+    const avo = this.avo;
+    
+    if (avo.state === AVO.STATE_START) {
+      this.paintStartInstructions();
+    } else if (avo.state === AVO.STATE_ACTION) {
+      this.paintRacingScore();
+    } else if (avo.state === AVO.STATE_END) {
+      this.paintEndScore();
+    }
+  }
+  
+  paintStartInstructions() {
+    const avo = this.avo;
+  }
+  
+  paintRacingScore() {
+    const avo = this.avo;
+    
+    avo.context2d.font = AVO.DEFAULT_FONT;
+    let x = 0, y = 0;
+    const SHADOW_COLOUR = "#c44";
+    const TEXT_COLOUR = "#eee";
+    const SHADOW_DIST = 2;
+    
+    //Paint the time remaining, in seconds
+    //--------------------------------
+    avo.context2d.textBaseline = "top";
+    avo.context2d.textAlign = "left";
+    x = 32;
+    y = 32;
+    
+    const t = (avo.store.TIME_MAX - avo.store.time) / AVO.FRAMES_PER_SECOND;
+    let strSeconds = Math.floor(t) + "";
+    while (strSeconds.length < 2) strSeconds = "0"+ strSeconds;
+    
+    const strTimeRemaining = strSeconds;
+    
+    avo.context2d.fillStyle = SHADOW_COLOUR;
+    avo.context2d.fillText(strTimeRemaining, x + SHADOW_DIST, y + SHADOW_DIST);
+    avo.context2d.fillStyle = TEXT_COLOUR;
+    avo.context2d.fillText(strTimeRemaining, x, y);
+    //--------------------------------
+    
+    //Paint the score
+    //--------------------------------
+    avo.context2d.textBaseline = "top";
+    avo.context2d.textAlign = "right";
+    x = avo.canvasWidth - 32;
+    y = 32;
+    
+    avo.context2d.fillStyle = SHADOW_COLOUR;
+    avo.context2d.fillText(avo.store.score, x + SHADOW_DIST, y + SHADOW_DIST);
+    avo.context2d.fillStyle = TEXT_COLOUR;
+    avo.context2d.fillText(avo.store.score, x, y);
+    //--------------------------------
+  }
+  
+  paintEndScore() {
+    const avo = this.avo;
+  }
+  
   playIntroComic() {
     const avo = this.avo;
     
     avo.comicStrip = new ComicStrip(
-      "introcomic",
+      "introComic",
       [ avo.assets.images.comicIntro1 ],
       this.finishIntroComic.bind(this)
     );
@@ -238,7 +300,6 @@ export class CNY2019 extends Story {
     const x = avo.canvasWidth * 1.1;
     const y = avo.store.MIN_Y + Math.floor(Math.random() * (avo.store.MAX_Y - avo.store.MIN_Y));
     
-    console.log(y);
     const actor = new Actor("coin", x, y, 32, AVO.SHAPE_CIRCLE);
     actor.solid = false;
     actor.spritesheet = avo.assets.images.fireworks;
@@ -254,7 +315,7 @@ export class CNY2019 extends Story {
     const avo = this.avo;
     
     avo.comicStrip = new ComicStrip(
-      "wincomic",
+      "winComic",
       [ avo.assets.images.comicWin1 ],
       this.playIntroComic.bind(this)
     );
