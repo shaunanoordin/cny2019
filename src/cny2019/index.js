@@ -30,9 +30,8 @@ export class CNY2019 extends Story {
         
     //Images
     //--------------------------------
-    avo.assets.images.rooster = new ImageAsset("assets/cny2019/rooster.png");
-    avo.assets.images.fireworks = new ImageAsset("assets/cny2019/fireworks.png");
-    avo.assets.images.background = new ImageAsset("assets/cny2019/city-background.png");
+    avo.assets.images.boar = new ImageAsset("assets/cny2019/boar.png");
+    avo.assets.images.coins = new ImageAsset("assets/cny2019/coins.png");
     avo.assets.images.comicIntro1 = new ImageAsset("assets/cny2019/comic-intro-1.png");
     avo.assets.images.comicWin1 = new ImageAsset("assets/cny2019/comic-win-1.png");
     //--------------------------------
@@ -41,47 +40,47 @@ export class CNY2019 extends Story {
     //--------------------------------
     const STEPS_PER_SECOND = AVO.FRAMES_PER_SECOND / 10;
     avo.animationSets = {
-      rooster: {
+      boar: {
         rule: AVO.ANIMATION_RULE_BASIC,
         tileWidth: 128,
         tileHeight: 128,
-        tileOffsetX: -32,
-        tileOffsetY: 0,
+        tileOffsetX: -16,
+        tileOffsetY: -16,
         actions: {
           idle: {
             loop: true,
             steps: [
-              { col: 0, row: 0, duration: STEPS_PER_SECOND * 1 },
+              { col: 0, row: 0, duration: STEPS_PER_SECOND * 3 },
               { col: 0, row: 1, duration: STEPS_PER_SECOND * 1 },
-              { col: 0, row: 2, duration: STEPS_PER_SECOND * 1 },
-              { col: 0, row: 1, duration: STEPS_PER_SECOND * 1 },
-            ],
-          },
-          walk: {
-            loop: true,
-            steps: [
-              { col: 0, row: 0, duration: STEPS_PER_SECOND * 1 },
-              { col: 0, row: 1, duration: STEPS_PER_SECOND * 1 },
-              { col: 0, row: 2, duration: STEPS_PER_SECOND * 1 },
+              { col: 0, row: 2, duration: STEPS_PER_SECOND * 2 },
               { col: 0, row: 1, duration: STEPS_PER_SECOND * 1 },
             ],
           },
         },
       },
-      fireworks: {
-        rule: AVO.ANIMATION_RULE_DIRECTIONAL,
-        tileWidth: 64,
-        tileHeight: 64,
+      coins: {
+        rule: AVO.ANIMATION_RULE_BASIC,
+        tileWidth: 32,
+        tileHeight: 32,
         tileOffsetX: 0,
         tileOffsetY: 0,
         actions: {
           idle: {
             loop: true,
             steps: [
-              { col: 0, row: 0, duration: STEPS_PER_SECOND * 1 },
-              { col: 0, row: 1, duration: STEPS_PER_SECOND * 1 },
-              { col: 0, row: 2, duration: STEPS_PER_SECOND * 1 },
-              { col: 0, row: 1, duration: STEPS_PER_SECOND * 1 },
+              { col: 0, row: 0, duration: STEPS_PER_SECOND * 2 },
+              { col: 0, row: 1, duration: STEPS_PER_SECOND * 2 },
+              { col: 0, row: 2, duration: STEPS_PER_SECOND * 2 },
+              { col: 0, row: 3, duration: STEPS_PER_SECOND * 2 },
+            ],
+          },
+          flash: {
+            loop: true,
+            steps: [
+              { col: 1, row: 0, duration: STEPS_PER_SECOND * 2 },
+              { col: 1, row: 1, duration: STEPS_PER_SECOND * 2 },
+              { col: 1, row: 2, duration: STEPS_PER_SECOND * 2 },
+              { col: 1, row: 3, duration: STEPS_PER_SECOND * 100 },  //HACK: for some reason, loop: false doesn't work properly
             ],
           },
         },
@@ -131,7 +130,7 @@ export class CNY2019 extends Story {
       this.paintRacingScore();
     } else if (avo.state === AVO.STATE_COMIC) {
       if (avo.comicStrip && avo.comicStrip.name === "introComic") {
-        this.paintWinScore();
+        this.paintStartInstructions();
       } else if (avo.comicStrip && avo.comicStrip.name === "winComic") {
         this.paintWinScore();
       }
@@ -186,8 +185,6 @@ export class CNY2019 extends Story {
   
   paintWinScore() {
     const avo = this.avo;
-    
-    console.log('avo Score:', avo.store.score);
     
     avo.context2d.font = AVO.DEFAULT_FONT;
     let x = 0, y = 0;
@@ -251,11 +248,12 @@ export class CNY2019 extends Story {
     const midX = avo.canvasWidth / 2, midY = avo.canvasHeight / 2;
     
     avo.playerActor = new Actor("player", midX / 2, midY, 64, AVO.SHAPE_CIRCLE);
-    avo.playerActor.spritesheet = avo.assets.images.rooster;
-    avo.playerActor.animationSet = avo.animationSets.rooster;
+    avo.playerActor.spritesheet = avo.assets.images.boar;
+    avo.playerActor.animationSet = avo.animationSets.boar;
     avo.playerActor.attributes[AVO.ATTR.SPEED] = 8;
+    avo.playerActor.playAnimation("idle");
     avo.playerActor.rotation = AVO.ROTATION_EAST;
-    avo.playerActor.shadowSize = 0;
+    avo.playerActor.shadowSize = 64;
     avo.actors.push(avo.playerActor);
     //--------------------------------
   }
@@ -301,7 +299,7 @@ export class CNY2019 extends Story {
       if (Physics.checkCollision(actor, avo.playerActor)) {
         if (!actor.attributes.hasBeenTouched) {
           actor.attributes.hasBeenTouched = true;
-          actor.rotation = AVO.ROTATION_EAST;  //TMP
+          actor.playAnimation("flash", true);
           avo.store.score++;
         }
       }
@@ -325,9 +323,10 @@ export class CNY2019 extends Story {
     
     const actor = new Actor("coin", x, y, 32, AVO.SHAPE_CIRCLE);
     actor.solid = false;
-    actor.spritesheet = avo.assets.images.fireworks;
-    actor.animationSet = avo.animationSets.fireworks;
+    actor.spritesheet = avo.assets.images.coins;
+    actor.animationSet = avo.animationSets.coins;
     actor.playAnimation("idle");
+    actor.shadowSize = 0;
     actor.rotation = AVO.ROTATION_NORTH;
     //actor.attributes.value = 1;
     actor.attributes.hasBeenTouched = false;
