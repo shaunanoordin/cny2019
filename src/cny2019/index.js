@@ -25,7 +25,7 @@ export class CNY2019 extends Story {
     
     //Config
     //--------------------------------
-    avo.config.debugMode = true;
+    avo.config.debugMode = false;
     //--------------------------------
         
     //Images
@@ -64,7 +64,7 @@ export class CNY2019 extends Story {
         tileWidth: 32,
         tileHeight: 32,
         tileOffsetX: 0,
-        tileOffsetY: 0,
+        tileOffsetY: -12,
         actions: {
           idle: {
             loop: true,
@@ -121,6 +121,14 @@ export class CNY2019 extends Story {
     
     if (avo.state === AVO.STATE_ACTION) {
       this.runRacingGame();
+    }
+  }
+  
+  prePaint() {
+    const avo = this.avo;
+    
+    if (avo.state === AVO.STATE_ACTION) {
+      this.paintRacingBackground();
     }
   }
   
@@ -190,6 +198,12 @@ export class CNY2019 extends Story {
     avo.context2d.drawImage(avo.assets.images.coins.img, 0, 0, 32, 32, x, y, 32, 32);
     //--------------------------------
 
+  }
+  
+  paintRacingBackground() {
+    const avo = this.avo;
+    avo.context2d.fillStyle = "#4cf";
+    avo.context2d.fillRect(0, 0, avo.canvasWidth, avo.canvasHeight);
   }
   
   paintWinScore() {
@@ -262,7 +276,7 @@ export class CNY2019 extends Story {
     avo.playerActor.attributes[AVO.ATTR.SPEED] = 8;
     avo.playerActor.playAnimation("idle");
     avo.playerActor.rotation = AVO.ROTATION_EAST;
-    avo.playerActor.shadowSize = 64;
+    avo.playerActor.shadowSize = 1;
     avo.actors.push(avo.playerActor);
     //--------------------------------
   }
@@ -309,6 +323,7 @@ export class CNY2019 extends Story {
         if (!actor.attributes.hasBeenTouched) {
           actor.attributes.hasBeenTouched = true;
           actor.playAnimation("flash", true);
+          actor.shadowSize = 0;
           avo.store.score++;
         }
       }
@@ -335,7 +350,7 @@ export class CNY2019 extends Story {
     actor.spritesheet = avo.assets.images.coins;
     actor.animationSet = avo.animationSets.coins;
     actor.playAnimation("idle");
-    actor.shadowSize = 0;
+    actor.shadowSize = 1;
     actor.rotation = AVO.ROTATION_NORTH;
     //actor.attributes.value = 1;
     actor.attributes.hasBeenTouched = false;
