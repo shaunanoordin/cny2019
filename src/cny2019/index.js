@@ -30,6 +30,7 @@ export class CNY2019 extends Story {
         
     //Images
     //--------------------------------
+    avo.assets.images.background = new ImageAsset("assets/cny2019/background.png");
     avo.assets.images.boar = new ImageAsset("assets/cny2019/boar.png");
     avo.assets.images.coins = new ImageAsset("assets/cny2019/coins.png");
     avo.assets.images.hourglass = new ImageAsset("assets/cny2019/hourglass.png");
@@ -202,8 +203,32 @@ export class CNY2019 extends Story {
   
   paintRacingBackground() {
     const avo = this.avo;
+    
+    //Sky
+    //--------------------------------
     avo.context2d.fillStyle = "#4cf";
     avo.context2d.fillRect(0, 0, avo.canvasWidth, avo.canvasHeight);
+    //--------------------------------
+    
+    //Moving city
+    //--------------------------------
+    const TILE_SIZE = 32;
+    const xOffset = - (avo.store.distance % TILE_SIZE);
+    const COLS = avo.canvasWidth / TILE_SIZE + 1;
+    const ROWS = avo.canvasHeight / TILE_SIZE;
+    
+    for (let y = (avo.store.MIN_Y / TILE_SIZE); y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        avo.context2d.drawImage(
+          avo.assets.images.background.img,
+          0, 0,
+          32, 32,
+          x * TILE_SIZE + xOffset, y * TILE_SIZE,
+          32, 32
+        );
+      }
+    }
+    
   }
   
   paintWinScore() {
