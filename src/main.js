@@ -7,13 +7,13 @@ AvO Adventure Game
  */
 
 import { AvO } from "./avo/index.js";
-import { ExampleAdventure } from "./example-adventure/index.js";
+import { CNY2019 } from "./cny2019/index.js";
  
 /*  Initialisations
  */
 //==============================================================================
 var app;
 window.onload = function() {
-  window.app = new AvO(new ExampleAdventure());
+  window.app = new AvO(new CNY2019());
 };
 //==============================================================================
