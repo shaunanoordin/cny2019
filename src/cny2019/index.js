@@ -32,6 +32,7 @@ export class CNY2019 extends Story {
     //--------------------------------
     avo.assets.images.boar = new ImageAsset("assets/cny2019/boar.png");
     avo.assets.images.coins = new ImageAsset("assets/cny2019/coins.png");
+    avo.assets.images.hourglass = new ImageAsset("assets/cny2019/hourglass.png");
     avo.assets.images.comicIntro1 = new ImageAsset("assets/cny2019/comic-intro-1.png");
     avo.assets.images.comicWin1 = new ImageAsset("assets/cny2019/comic-win-1.png");
     //--------------------------------
@@ -154,8 +155,7 @@ export class CNY2019 extends Story {
     //--------------------------------
     avo.context2d.textBaseline = "top";
     avo.context2d.textAlign = "left";
-    x = 32;
-    y = 32;
+    x = 80, y = 32;
     
     const t = (avo.store.TIME_MAX - avo.store.time) / AVO.FRAMES_PER_SECOND;
     let strSeconds = Math.floor(t) + "";
@@ -173,14 +173,23 @@ export class CNY2019 extends Story {
     //--------------------------------
     avo.context2d.textBaseline = "top";
     avo.context2d.textAlign = "right";
-    x = avo.canvasWidth - 32;
-    y = 32;
+    x = avo.canvasWidth - 80, y = 32;
     
     avo.context2d.fillStyle = SHADOW_COLOUR;
     avo.context2d.fillText(avo.store.score, x + SHADOW_DIST, y + SHADOW_DIST);
     avo.context2d.fillStyle = TEXT_COLOUR;
     avo.context2d.fillText(avo.store.score, x, y);
     //--------------------------------
+    
+    //Paint the icons
+    //--------------------------------
+    x = 32, y = 32;
+    avo.context2d.drawImage(avo.assets.images.hourglass.img, 0, 0, 32, 32, x, y, 32, 32);
+    
+    x = avo.canvasWidth - 64, y = 32;
+    avo.context2d.drawImage(avo.assets.images.coins.img, 0, 0, 32, 32, x, y, 32, 32);
+    //--------------------------------
+
   }
   
   paintWinScore() {
@@ -234,8 +243,8 @@ export class CNY2019 extends Story {
       runningSpeed: 0,
       RUNNING_SPEED_MIN: 2,
       RUNNING_SPEED_MAX: 16,
-      MIN_Y: 128,  //Portion of the screen that the player cannot go above
-      MAX_Y: avo.canvasHeight - 128,  //Portion of the screen that the player cannot go above
+      MIN_Y: 256,  //Portion of the screen that the player cannot go above
+      MAX_Y: avo.canvasHeight - 64,  //Portion of the screen that the player cannot go above
       tick: 0,
       TICK_MAX: AVO.FRAMES_PER_SECOND * 2,
       time: 0,
