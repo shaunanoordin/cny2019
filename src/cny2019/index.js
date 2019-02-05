@@ -334,7 +334,7 @@ export class CNY2019 extends Story {
       tick: 0,
       TICK_MAX: AVO.FRAMES_PER_SECOND * 2,
       time: 0,
-      TIME_MAX: AVO.FRAMES_PER_SECOND * 0,
+      TIME_MAX: AVO.FRAMES_PER_SECOND * 30,
     };
     //--------------------------------
 
