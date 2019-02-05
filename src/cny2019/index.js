@@ -30,7 +30,8 @@ export class CNY2019 extends Story {
         
     //Images
     //--------------------------------
-    avo.assets.images.background = new ImageAsset("assets/cny2019/background.png");
+    avo.assets.images.backgroundBuilding = new ImageAsset("assets/cny2019/background-buildings.png");
+    avo.assets.images.backgroundStreet = new ImageAsset("assets/cny2019/background-street.png");
     avo.assets.images.boar = new ImageAsset("assets/cny2019/boar.png");
     avo.assets.images.coins = new ImageAsset("assets/cny2019/coins.png");
     avo.assets.images.hourglass = new ImageAsset("assets/cny2019/hourglass.png");
@@ -230,21 +231,21 @@ export class CNY2019 extends Story {
     
     //Sky
     //--------------------------------
-    avo.context2d.fillStyle = "#4cf";
+    avo.context2d.fillStyle = "#8ef";
     avo.context2d.fillRect(0, 0, avo.canvasWidth, avo.canvasHeight);
     //--------------------------------
     
-    //Moving city
+    //Moving city: street
     //--------------------------------
-    const TILE_SIZE = 32;
-    const xOffset = - (avo.store.distance % TILE_SIZE);
-    const COLS = avo.canvasWidth / TILE_SIZE + 1;
-    const ROWS = avo.canvasHeight / TILE_SIZE;
+    let TILE_SIZE = 32;
+    let xOffset = - (avo.store.distance % TILE_SIZE);
+    let COLS = avo.canvasWidth / TILE_SIZE + 1;
+    let ROWS = avo.canvasHeight / TILE_SIZE;
     
     for (let y = (avo.store.MIN_Y / TILE_SIZE); y < ROWS; y++) {
       for (let x = 0; x < COLS; x++) {
         avo.context2d.drawImage(
-          avo.assets.images.background.img,
+          avo.assets.images.backgroundStreet.img,
           0, 0,
           32, 32,
           x * TILE_SIZE + xOffset, y * TILE_SIZE,
@@ -252,6 +253,23 @@ export class CNY2019 extends Story {
         );
       }
     }
+    //--------------------------------
+    
+    //Moving city: buildings
+    //--------------------------------
+    const buildingWidth = 512, buildingHeight = 256;
+    xOffset = - (avo.store.distance % buildingWidth);
+    COLS = avo.canvasWidth / buildingWidth + 1;
+    for (let x = 0; x < COLS; x++) {
+      avo.context2d.drawImage(
+        avo.assets.images.backgroundBuilding.img,
+        0, 0,
+        buildingWidth, buildingHeight,
+        x * buildingWidth + xOffset, 0,
+        buildingWidth, buildingHeight
+      );
+    }
+    //--------------------------------
     
   }
   
