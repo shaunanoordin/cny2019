@@ -34,6 +34,7 @@ export class CNY2019 extends Story {
     avo.assets.images.boar = new ImageAsset("assets/cny2019/boar.png");
     avo.assets.images.coins = new ImageAsset("assets/cny2019/coins.png");
     avo.assets.images.hourglass = new ImageAsset("assets/cny2019/hourglass.png");
+    avo.assets.images.instructions = new ImageAsset("assets/cny2019/instructions.png");
     avo.assets.images.comicIntro1 = new ImageAsset("assets/cny2019/comic-intro-1.png");
     avo.assets.images.comicWin1 = new ImageAsset("assets/cny2019/comic-win-1.png");
     //--------------------------------
@@ -149,6 +150,19 @@ export class CNY2019 extends Story {
   
   paintStartInstructions() {
     const avo = this.avo;
+    
+    //Skip if the comic is still transitioning.
+    if (avo.comicStrip && avo.comicStrip.state === AVO.COMIC_STRIP_STATE_TRANSITIONING) return;
+    
+    let x = 0, y = 0, size = 64;
+    const step = (avo.store.time < avo.store.TIME_MAX / 2) ? 0 : 1;
+    avo.store.time = (avo.store.time + 1) % avo.store.TIME_MAX;
+    
+    x = 64 * 1, y = 64 * 3;
+    avo.context2d.drawImage(avo.assets.images.instructions.img, 0 * size, step * size, size, size, x, y, size * 2, size * 2);
+    
+    x = 64 * 1, y = 64 * 1;
+    avo.context2d.drawImage(avo.assets.images.instructions.img, 1 * size, step * size, size, size, x, y, size * 2, size * 2);
   }
   
   paintRacingScore() {
@@ -274,6 +288,11 @@ export class CNY2019 extends Story {
   
   playIntroComic() {
     const avo = this.avo;
+    
+    avo.store = {
+      time: 0,
+      TIME_MAX: AVO.FRAMES_PER_SECOND * 1,
+    };
     
     avo.comicStrip = new ComicStrip(
       "introComic",
