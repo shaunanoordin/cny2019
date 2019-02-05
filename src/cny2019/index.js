@@ -126,6 +126,16 @@ export class CNY2019 extends Story {
     }
   }
   
+  run_comic() {
+    const avo = this.avo;
+    
+    //ENDING LOCK: Stay in the Win screen!
+    if (avo.comicStrip.name === "winComic" && avo.comicStrip.state === AVO.COMIC_STRIP_STATE_WAIT_BEFORE_INPUT) {
+      avo.store.theGameHasEnded = true;
+      avo.comicStrip.transitionTime = 0;
+    }
+  }
+  
   prePaint() {
     const avo = this.avo;
     
@@ -158,10 +168,10 @@ export class CNY2019 extends Story {
     const step = (avo.store.time < avo.store.TIME_MAX / 2) ? 0 : 1;
     avo.store.time = (avo.store.time + 1) % avo.store.TIME_MAX;
     
-    x = 64 * 1, y = 64 * 3;
+    x = 32 * 2, y = 32 * 7;
     avo.context2d.drawImage(avo.assets.images.instructions.img, 0 * size, step * size, size, size, x, y, size * 2, size * 2);
     
-    x = 64 * 1, y = 64 * 1;
+    x = 32 * 2, y = 32 * 2;
     avo.context2d.drawImage(avo.assets.images.instructions.img, 1 * size, step * size, size, size, x, y, size * 2, size * 2);
   }
   
@@ -324,7 +334,7 @@ export class CNY2019 extends Story {
       tick: 0,
       TICK_MAX: AVO.FRAMES_PER_SECOND * 2,
       time: 0,
-      TIME_MAX: AVO.FRAMES_PER_SECOND * 30,
+      TIME_MAX: AVO.FRAMES_PER_SECOND * 0,
     };
     //--------------------------------
 
@@ -425,7 +435,9 @@ export class CNY2019 extends Story {
     avo.comicStrip = new ComicStrip(
       "winComic",
       [ avo.assets.images.comicWin1 ],
-      this.playIntroComic.bind(this)
+      this.playWinComic.bind(this)  //ENDING LOCK: Stay in the Win screen!
     );
+    
+    if (avo.store.theGameHasEnded) avo.comicStrip.transitionTime = 0;  //ENDING LOCK: Stay in the Win screen!
   }
 }
