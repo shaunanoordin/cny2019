@@ -234,23 +234,41 @@ export class CNY2019 extends Story {
   paintWinScore() {
     const avo = this.avo;
     
+    //Skip if the comic is still transitioning.
+    if (avo.comicStrip && avo.comicStrip.state === AVO.COMIC_STRIP_STATE_TRANSITIONING) return;
+    
     avo.context2d.font = AVO.DEFAULT_FONT;
-    let x = 0, y = 0;
-    const SHADOW_COLOUR = "#c44";
-    const TEXT_COLOUR = "#eee";
-    const SHADOW_DIST = 2;
+    let x = 0, y = 0, w = 0, h = 0;
+    const SHADOW_COLOUR = "#000";
+    const TEXT_COLOUR = "#cc4";
+    const SHADOW_DIST = 1;
+    
+    //Paint the score background
+    //--------------------------------
+    x = 416, y = 192, w = 192, h = 64;
+    avo.context2d.fillStyle = "#444";
+    avo.context2d.fillRect(x - 2, y - 2, w + 4, h + 4);
+    avo.context2d.fillStyle = "#fff";
+    avo.context2d.fillRect(x, y, w, h);
+    //--------------------------------
     
     //Paint the score
     //--------------------------------
-    avo.context2d.textBaseline = "top";
-    avo.context2d.textAlign = "left";
-    x = 64;
-    y = 64;
+    avo.context2d.textBaseline = "middle";
+    avo.context2d.textAlign = "right";
+    x = 416 + w - 32;
+    y = 192 + 32;
     
     avo.context2d.fillStyle = SHADOW_COLOUR;
     avo.context2d.fillText(avo.store.score, x + SHADOW_DIST, y + SHADOW_DIST);
     avo.context2d.fillStyle = TEXT_COLOUR;
     avo.context2d.fillText(avo.store.score, x, y);
+    //--------------------------------
+    
+    //Paint the icons
+    //--------------------------------
+    x = 416 + 16, y = 192 + 16;
+    avo.context2d.drawImage(avo.assets.images.coins.img, 0, 0, 32, 32, x, y, 32, 32);
     //--------------------------------
   }
   
@@ -287,7 +305,7 @@ export class CNY2019 extends Story {
       tick: 0,
       TICK_MAX: AVO.FRAMES_PER_SECOND * 2,
       time: 0,
-      TIME_MAX: AVO.FRAMES_PER_SECOND * 10,
+      TIME_MAX: AVO.FRAMES_PER_SECOND * 30,
     };
     //--------------------------------
 
