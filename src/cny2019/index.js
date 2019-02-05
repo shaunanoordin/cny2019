@@ -25,13 +25,17 @@ export class CNY2019 extends Story {
     
     //Config
     //--------------------------------
-    avo.config.debugMode = true;
+    avo.config.debugMode = false;
     //--------------------------------
         
     //Images
     //--------------------------------
+    avo.assets.images.backgroundBuilding = new ImageAsset("assets/cny2019/background-buildings.png");
+    avo.assets.images.backgroundStreet = new ImageAsset("assets/cny2019/background-street.png");
     avo.assets.images.boar = new ImageAsset("assets/cny2019/boar.png");
     avo.assets.images.coins = new ImageAsset("assets/cny2019/coins.png");
+    avo.assets.images.hourglass = new ImageAsset("assets/cny2019/hourglass.png");
+    avo.assets.images.instructions = new ImageAsset("assets/cny2019/instructions.png");
     avo.assets.images.comicIntro1 = new ImageAsset("assets/cny2019/comic-intro-1.png");
     avo.assets.images.comicWin1 = new ImageAsset("assets/cny2019/comic-win-1.png");
     //--------------------------------
@@ -63,7 +67,7 @@ export class CNY2019 extends Story {
         tileWidth: 32,
         tileHeight: 32,
         tileOffsetX: 0,
-        tileOffsetY: 0,
+        tileOffsetY: -12,
         actions: {
           idle: {
             loop: true,
@@ -123,6 +127,24 @@ export class CNY2019 extends Story {
     }
   }
   
+  run_comic() {
+    const avo = this.avo;
+    
+    //ENDING LOCK: Stay in the Win screen!
+    if (avo.comicStrip.name === "winComic" && avo.comicStrip.state === AVO.COMIC_STRIP_STATE_WAIT_BEFORE_INPUT) {
+      avo.store.theGameHasEnded = true;
+      avo.comicStrip.transitionTime = 0;
+    }
+  }
+  
+  prePaint() {
+    const avo = this.avo;
+    
+    if (avo.state === AVO.STATE_ACTION) {
+      this.paintRacingBackground();
+    }
+  }
+  
   postPaint() {
     const avo = this.avo;
     
@@ -139,6 +161,19 @@ export class CNY2019 extends Story {
   
   paintStartInstructions() {
     const avo = this.avo;
+    
+    //Skip if the comic is still transitioning.
+    if (avo.comicStrip && avo.comicStrip.state === AVO.COMIC_STRIP_STATE_TRANSITIONING) return;
+    
+    let x = 0, y = 0, size = 64;
+    const step = (avo.store.time < avo.store.TIME_MAX / 2) ? 0 : 1;
+    avo.store.time = (avo.store.time + 1) % avo.store.TIME_MAX;
+    
+    x = 32 * 2, y = 32 * 7;
+    avo.context2d.drawImage(avo.assets.images.instructions.img, 0 * size, step * size, size, size, x, y, size * 2, size * 2);
+    
+    x = 32 * 2, y = 32 * 2;
+    avo.context2d.drawImage(avo.assets.images.instructions.img, 1 * size, step * size, size, size, x, y, size * 2, size * 2);
   }
   
   paintRacingScore() {
@@ -154,8 +189,7 @@ export class CNY2019 extends Story {
     //--------------------------------
     avo.context2d.textBaseline = "top";
     avo.context2d.textAlign = "left";
-    x = 32;
-    y = 32;
+    x = 80, y = 32;
     
     const t = (avo.store.TIME_MAX - avo.store.time) / AVO.FRAMES_PER_SECOND;
     let strSeconds = Math.floor(t) + "";
@@ -173,41 +207,120 @@ export class CNY2019 extends Story {
     //--------------------------------
     avo.context2d.textBaseline = "top";
     avo.context2d.textAlign = "right";
-    x = avo.canvasWidth - 32;
-    y = 32;
+    x = avo.canvasWidth - 80, y = 32;
     
     avo.context2d.fillStyle = SHADOW_COLOUR;
     avo.context2d.fillText(avo.store.score, x + SHADOW_DIST, y + SHADOW_DIST);
     avo.context2d.fillStyle = TEXT_COLOUR;
     avo.context2d.fillText(avo.store.score, x, y);
     //--------------------------------
+    
+    //Paint the icons
+    //--------------------------------
+    x = 32, y = 32;
+    avo.context2d.drawImage(avo.assets.images.hourglass.img, 0, 0, 32, 32, x, y, 32, 32);
+    
+    x = avo.canvasWidth - 64, y = 32;
+    avo.context2d.drawImage(avo.assets.images.coins.img, 0, 0, 32, 32, x, y, 32, 32);
+    //--------------------------------
+
+  }
+  
+  paintRacingBackground() {
+    const avo = this.avo;
+    
+    //Sky
+    //--------------------------------
+    avo.context2d.fillStyle = "#8ef";
+    avo.context2d.fillRect(0, 0, avo.canvasWidth, avo.canvasHeight);
+    //--------------------------------
+    
+    //Moving city: street
+    //--------------------------------
+    let TILE_SIZE = 32;
+    let xOffset = - (avo.store.distance % TILE_SIZE);
+    let COLS = avo.canvasWidth / TILE_SIZE + 1;
+    let ROWS = avo.canvasHeight / TILE_SIZE;
+    
+    for (let y = (avo.store.MIN_Y / TILE_SIZE); y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        avo.context2d.drawImage(
+          avo.assets.images.backgroundStreet.img,
+          0, 0,
+          32, 32,
+          x * TILE_SIZE + xOffset, y * TILE_SIZE,
+          32, 32
+        );
+      }
+    }
+    //--------------------------------
+    
+    //Moving city: buildings
+    //--------------------------------
+    const buildingWidth = 512, buildingHeight = 256;
+    xOffset = - (avo.store.distance % buildingWidth);
+    COLS = avo.canvasWidth / buildingWidth + 1;
+    for (let x = 0; x < COLS; x++) {
+      avo.context2d.drawImage(
+        avo.assets.images.backgroundBuilding.img,
+        0, 0,
+        buildingWidth, buildingHeight,
+        x * buildingWidth + xOffset, 0,
+        buildingWidth, buildingHeight
+      );
+    }
+    //--------------------------------
+    
   }
   
   paintWinScore() {
     const avo = this.avo;
     
+    //Skip if the comic is still transitioning.
+    if (avo.comicStrip && avo.comicStrip.state === AVO.COMIC_STRIP_STATE_TRANSITIONING) return;
+    
     avo.context2d.font = AVO.DEFAULT_FONT;
-    let x = 0, y = 0;
-    const SHADOW_COLOUR = "#c44";
-    const TEXT_COLOUR = "#eee";
-    const SHADOW_DIST = 2;
+    let x = 0, y = 0, w = 0, h = 0;
+    const SHADOW_COLOUR = "#000";
+    const TEXT_COLOUR = "#cc4";
+    const SHADOW_DIST = 1;
+    
+    //Paint the score background
+    //--------------------------------
+    x = 416, y = 192, w = 192, h = 64;
+    avo.context2d.fillStyle = "#444";
+    avo.context2d.fillRect(x - 2, y - 2, w + 4, h + 4);
+    avo.context2d.fillStyle = "#fff";
+    avo.context2d.fillRect(x, y, w, h);
+    //--------------------------------
     
     //Paint the score
     //--------------------------------
-    avo.context2d.textBaseline = "top";
-    avo.context2d.textAlign = "left";
-    x = 64;
-    y = 64;
+    avo.context2d.textBaseline = "middle";
+    avo.context2d.textAlign = "right";
+    x = 416 + w - 32;
+    y = 192 + 32;
     
     avo.context2d.fillStyle = SHADOW_COLOUR;
     avo.context2d.fillText(avo.store.score, x + SHADOW_DIST, y + SHADOW_DIST);
     avo.context2d.fillStyle = TEXT_COLOUR;
     avo.context2d.fillText(avo.store.score, x, y);
     //--------------------------------
+    
+    //Paint the icons
+    //--------------------------------
+    x = 416 + 16, y = 192 + 16;
+    avo.context2d.drawImage(avo.assets.images.coins.img, 0, 0, 32, 32, x, y, 32, 32);
+    //--------------------------------
   }
   
   playIntroComic() {
     const avo = this.avo;
+    
+    avo.store = {
+      time: 0,
+      TIME_MAX: AVO.FRAMES_PER_SECOND * 1,
+    };
     
     avo.comicStrip = new ComicStrip(
       "introComic",
@@ -234,12 +347,12 @@ export class CNY2019 extends Story {
       runningSpeed: 0,
       RUNNING_SPEED_MIN: 2,
       RUNNING_SPEED_MAX: 16,
-      MIN_Y: 128,  //Portion of the screen that the player cannot go above
-      MAX_Y: avo.canvasHeight - 128,  //Portion of the screen that the player cannot go above
+      MIN_Y: 256,  //Portion of the screen that the player cannot go above
+      MAX_Y: avo.canvasHeight - 64,  //Portion of the screen that the player cannot go above
       tick: 0,
       TICK_MAX: AVO.FRAMES_PER_SECOND * 2,
       time: 0,
-      TIME_MAX: AVO.FRAMES_PER_SECOND * 10,
+      TIME_MAX: AVO.FRAMES_PER_SECOND * 30,
     };
     //--------------------------------
 
@@ -253,7 +366,7 @@ export class CNY2019 extends Story {
     avo.playerActor.attributes[AVO.ATTR.SPEED] = 8;
     avo.playerActor.playAnimation("idle");
     avo.playerActor.rotation = AVO.ROTATION_EAST;
-    avo.playerActor.shadowSize = 64;
+    avo.playerActor.shadowSize = 1;
     avo.actors.push(avo.playerActor);
     //--------------------------------
   }
@@ -300,6 +413,7 @@ export class CNY2019 extends Story {
         if (!actor.attributes.hasBeenTouched) {
           actor.attributes.hasBeenTouched = true;
           actor.playAnimation("flash", true);
+          actor.shadowSize = 0;
           avo.store.score++;
         }
       }
@@ -326,7 +440,7 @@ export class CNY2019 extends Story {
     actor.spritesheet = avo.assets.images.coins;
     actor.animationSet = avo.animationSets.coins;
     actor.playAnimation("idle");
-    actor.shadowSize = 0;
+    actor.shadowSize = 1;
     actor.rotation = AVO.ROTATION_NORTH;
     //actor.attributes.value = 1;
     actor.attributes.hasBeenTouched = false;
@@ -339,7 +453,9 @@ export class CNY2019 extends Story {
     avo.comicStrip = new ComicStrip(
       "winComic",
       [ avo.assets.images.comicWin1 ],
-      this.playIntroComic.bind(this)
+      this.playWinComic.bind(this)  //ENDING LOCK: Stay in the Win screen!
     );
+    
+    if (avo.store.theGameHasEnded) avo.comicStrip.transitionTime = 0;  //ENDING LOCK: Stay in the Win screen!
   }
 }
